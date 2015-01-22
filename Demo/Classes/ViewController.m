@@ -18,6 +18,25 @@
 
 #pragma mark - Notification Methods Sample
 
+-(void)viewDidLoad{
+    [super viewDidLoad];
+    [SVProgressHUD setDefaultAnimatedImage:[UIImage animatedImageWithImages:@[
+                                                                              [UIImage imageNamed:@"frame_000.gif"],
+                                                                              [UIImage imageNamed:@"frame_001.gif"],
+                                                                              [UIImage imageNamed:@"frame_002.gif"],
+                                                                              [UIImage imageNamed:@"frame_003.gif"],
+                                                                              [UIImage imageNamed:@"frame_004.gif"],
+                                                                              [UIImage imageNamed:@"frame_005.gif"],
+                                                                              [UIImage imageNamed:@"frame_006.gif"],
+                                                                              [UIImage imageNamed:@"frame_007.gif"],
+                                                                              [UIImage imageNamed:@"frame_008.gif"],
+                                                                              [UIImage imageNamed:@"frame_009.gif"],
+                                                                              [UIImage imageNamed:@"frame_010.gif"],
+                                                                              [UIImage imageNamed:@"frame_011.gif"]
+                                                                              ]
+                                                                   duration:1.0]];
+    [SVProgressHUD setDefaultAnimatedImageSize:CGSizeMake(50, 50)];
+}
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     
@@ -52,11 +71,13 @@
 #pragma mark - Show Methods Sample
 
 - (void)show {
-	[SVProgressHUD show];
+//	[SVProgressHUD show];
+    [SVProgressHUD showAnimatedImage];
 }
 
 - (void)showWithStatus {
-	[SVProgressHUD showWithStatus:@"Doing Stuff"];
+//	[SVProgressHUD showWithStatus:@"Doing Stuff"];
+    [SVProgressHUD showAnimatedImageWithStatus:@"Doing Stuff"];
 }
 
 static float progress = 0.0f;

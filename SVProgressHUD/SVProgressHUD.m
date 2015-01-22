@@ -32,6 +32,8 @@ static UIImage *SVProgressHUDSuccessImage;
 static UIImage *SVProgressHUDErrorImage;
 static SVProgressHUDMaskType SVProgressHUDDefaultMaskType;
 static UIView *SVProgressHUDExtensionView;
+static UIImage *SVProgressHUDAnimatedImage;
+static CGSize SVProgressHUDAnimatedImageSize;
 
 static const CGFloat SVProgressHUDRingRadius = 18;
 static const CGFloat SVProgressHUDRingNoTextRadius = 24;
@@ -135,6 +137,16 @@ static const CGFloat SVProgressHUDUndefinedProgress = -1;
     SVProgressHUDExtensionView = view;
 }
 
++ (void)setDefaultAnimatedImage:(UIImage *)image{
+    [self sharedView];
+    SVProgressHUDAnimatedImage = image;
+}
+
++(void)setDefaultAnimatedImageSize:(CGSize)size{
+    [self sharedView];
+    SVProgressHUDAnimatedImageSize = size;
+}
+
 
 #pragma mark - Show Methods
 
@@ -142,16 +154,32 @@ static const CGFloat SVProgressHUDUndefinedProgress = -1;
     [self showWithStatus:nil];
 }
 
++(void)showAnimatedImage {
+    [[self sharedView] showImage:SVProgressHUDAnimatedImage status:nil duration:-1 maskType:SVProgressHUDDefaultMaskType];
+}
+
 + (void)showWithMaskType:(SVProgressHUDMaskType)maskType {
     [self showProgress:SVProgressHUDUndefinedProgress maskType:maskType];
+}
+
++(void)showAnimatedImageWithMaskType:(SVProgressHUDMaskType)maskType{
+    [[self sharedView] showImage:SVProgressHUDAnimatedImage status:nil duration:-1 maskType:maskType];
 }
 
 + (void)showWithStatus:(NSString *)status {
     [self showProgress:SVProgressHUDUndefinedProgress status:status];
 }
 
++(void)showAnimatedImageWithStatus:(NSString *)status{
+    [[self sharedView] showImage:SVProgressHUDAnimatedImage status:status duration:-1 maskType:SVProgressHUDDefaultMaskType];
+}
+
 + (void)showWithStatus:(NSString*)status maskType:(SVProgressHUDMaskType)maskType {
     [self showProgress:SVProgressHUDUndefinedProgress status:status maskType:maskType];
+}
+
++(void)showAnimatedImageWithStatus:(NSString *)status maskType:(SVProgressHUDMaskType)maskType{
+    [[self sharedView] showImage:SVProgressHUDAnimatedImage status:status duration:-1 maskType:maskType];
 }
 
 + (void)showProgress:(float)progress {
@@ -272,6 +300,7 @@ static const CGFloat SVProgressHUDUndefinedProgress = -1;
         }
         SVProgressHUDRingThickness = 2;
         SVProgressHUDDefaultMaskType = SVProgressHUDMaskTypeNone;
+        SVProgressHUDAnimatedImageSize = CGSizeMake(28.0f, 28.0f);
     }
 	
     return self;
@@ -725,8 +754,10 @@ static const CGFloat SVProgressHUDUndefinedProgress = -1;
     UIAccessibilityPostNotification(UIAccessibilityScreenChangedNotification, nil);
     UIAccessibilityPostNotification(UIAccessibilityAnnouncementNotification, string);
     
-    self.fadeOutTimer = [NSTimer timerWithTimeInterval:duration target:self selector:@selector(dismiss) userInfo:nil repeats:NO];
-    [[NSRunLoop mainRunLoop] addTimer:self.fadeOutTimer forMode:NSRunLoopCommonModes];
+    if(duration!=-1){
+        self.fadeOutTimer = [NSTimer timerWithTimeInterval:duration target:self selector:@selector(dismiss) userInfo:nil repeats:NO];
+        [[NSRunLoop mainRunLoop] addTimer:self.fadeOutTimer forMode:NSRunLoopCommonModes];
+    }
 }
 
 - (void)dismiss {
@@ -936,7 +967,7 @@ static const CGFloat SVProgressHUDUndefinedProgress = -1;
 
 - (UIImageView *)imageView {
     if (!_imageView)
-        _imageView = [[UIImageView alloc] initWithFrame:CGRectMake(0.0f, 0.0f, 28.0f, 28.0f)];
+        _imageView = [[UIImageView alloc] initWithFrame:CGRectMake(0.0f, 0.0f, SVProgressHUDAnimatedImageSize.width,  SVProgressHUDAnimatedImageSize.height)];
     
     if(!_imageView.superview)
         [self.hudView addSubview:_imageView];
