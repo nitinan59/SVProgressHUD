@@ -33,6 +33,7 @@ static UIImage *SVProgressHUDErrorImage;
 static SVProgressHUDMaskType SVProgressHUDDefaultMaskType;
 static UIView *SVProgressHUDExtensionView;
 static UIImage *SVProgressHUDAnimatedImage;
+static CGSize SVProgressHUDImageSize;
 static CGSize SVProgressHUDAnimatedImageSize;
 
 static const CGFloat SVProgressHUDRingRadius = 18;
@@ -301,6 +302,7 @@ static const CGFloat SVProgressHUDUndefinedProgress = -1;
         SVProgressHUDRingThickness = 2;
         SVProgressHUDDefaultMaskType = SVProgressHUDMaskTypeNone;
         SVProgressHUDAnimatedImageSize = CGSizeMake(28.0f, 28.0f);
+        SVProgressHUDImageSize = CGSizeMake(28.0f, 28.0f);
     }
 	
     return self;
@@ -340,10 +342,14 @@ static const CGFloat SVProgressHUDUndefinedProgress = -1;
     }
 }
 
-- (void)updatePosition {
-	
+- (void)updatePosition:(BOOL)isAnimatedImage{
+    
     CGFloat hudWidth = 100.0f;
     CGFloat hudHeight = 100.0f;
+    if (isAnimatedImage){
+        hudWidth += 20;
+        hudHeight += 20;
+    }
     CGFloat stringHeightBuffer = 20.0f;
     CGFloat stringAndContentHeightBuffer = 80.0f;
     
@@ -361,10 +367,10 @@ static const CGFloat SVProgressHUDUndefinedProgress = -1;
         CGSize constraintSize = CGSizeMake(200.0f, 300.0f);
         CGRect stringRect;
         if ([string respondsToSelector:@selector(boundingRectWithSize:options:attributes:context:)]) {
-          stringRect = [string boundingRectWithSize:constraintSize
-                                            options:(NSStringDrawingUsesFontLeading|NSStringDrawingTruncatesLastVisibleLine|NSStringDrawingUsesLineFragmentOrigin)
-                                         attributes:@{NSFontAttributeName: self.stringLabel.font}
-                                            context:NULL];
+            stringRect = [string boundingRectWithSize:constraintSize
+                                              options:(NSStringDrawingUsesFontLeading|NSStringDrawingTruncatesLastVisibleLine|NSStringDrawingUsesLineFragmentOrigin)
+                                           attributes:@{NSFontAttributeName: self.stringLabel.font}
+                                              context:NULL];
         } else {
             CGSize stringSize;
             
@@ -399,21 +405,25 @@ static const CGFloat SVProgressHUDUndefinedProgress = -1;
             labelRect = CGRectMake(0.0f, labelRectY, hudWidth, stringHeight);
         }
     }
-	
-	self.hudView.bounds = CGRectMake(0.0f, 0.0f, hudWidth, hudHeight);
     
+    self.hudView.bounds = CGRectMake(0.0f, 0.0f, hudWidth, hudHeight);
+    if(isAnimatedImage){
+        self.imageView.frame = CGRectMake(0, 0, SVProgressHUDAnimatedImageSize.width, SVProgressHUDAnimatedImageSize.height);
+    }else{
+        self.imageView.frame = CGRectMake(0, 0, SVProgressHUDImageSize.width, SVProgressHUDImageSize.height);
+    }
     if(string)
         self.imageView.center = CGPointMake(CGRectGetWidth(self.hudView.bounds)/2, 36.0f);
-	else
+    else
        	self.imageView.center = CGPointMake(CGRectGetWidth(self.hudView.bounds)/2, CGRectGetHeight(self.hudView.bounds)/2);
-	
-	self.stringLabel.hidden = NO;
-	self.stringLabel.frame = labelRect;
+    
+    self.stringLabel.hidden = NO;
+    self.stringLabel.frame = labelRect;
     
     [CATransaction begin];
     [CATransaction setValue:(id)kCFBooleanTrue forKey:kCATransactionDisableActions];
-	
-	if(string) {
+    
+    if(string) {
         self.indefiniteAnimatedView.radius = SVProgressHUDRingRadius;
         [self.indefiniteAnimatedView sizeToFit];
         
@@ -422,7 +432,7 @@ static const CGFloat SVProgressHUDUndefinedProgress = -1;
         
         if(self.progress != SVProgressHUDUndefinedProgress)
             self.backgroundRingLayer.position = self.ringLayer.position = CGPointMake((CGRectGetWidth(self.hudView.bounds)/2), 36.0f);
-	} else {
+    } else {
         self.indefiniteAnimatedView.radius = SVProgressHUDRingNoTextRadius;
         [self.indefiniteAnimatedView sizeToFit];
         
@@ -434,6 +444,10 @@ static const CGFloat SVProgressHUDUndefinedProgress = -1;
     }
     
     [CATransaction commit];
+    
+}
+- (void)updatePosition {
+    [self updatePosition:NO];
 }
 
 - (void)setStatus:(NSString *)string {
@@ -722,6 +736,7 @@ static const CGFloat SVProgressHUDUndefinedProgress = -1;
 }
 
 - (void)showImage:(UIImage *)image status:(NSString *)string duration:(NSTimeInterval)duration maskType:(SVProgressHUDMaskType)hudMaskType {
+    
     self.progress = SVProgressHUDUndefinedProgress;
     self.maskType = hudMaskType;
     [self cancelRingLayerAnimation];
@@ -738,7 +753,12 @@ static const CGFloat SVProgressHUDUndefinedProgress = -1;
     self.imageView.hidden = NO;
     
     self.stringLabel.text = string;
-    [self updatePosition];
+    if(duration==-1){
+        //animated image
+        [self updatePosition:YES];
+    }else{
+        [self updatePosition];
+    }
     [self.indefiniteAnimatedView removeFromSuperview];
     
     if(self.maskType != SVProgressHUDMaskTypeNone) {
@@ -967,7 +987,7 @@ static const CGFloat SVProgressHUDUndefinedProgress = -1;
 
 - (UIImageView *)imageView {
     if (!_imageView)
-        _imageView = [[UIImageView alloc] initWithFrame:CGRectMake(0.0f, 0.0f, SVProgressHUDAnimatedImageSize.width,  SVProgressHUDAnimatedImageSize.height)];
+        _imageView = [[UIImageView alloc] initWithFrame:CGRectMake(0.0f, 0.0f, SVProgressHUDImageSize.width,  SVProgressHUDImageSize.height)];
     
     if(!_imageView.superview)
         [self.hudView addSubview:_imageView];
